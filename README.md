@@ -2,6 +2,10 @@
 
 A printable, battery-powered Bluetooth Low Energy keyboard controller for **MyWhoosh on macOS**. Choose either a compact two-button shifter or a four-button shifter with steering. Both variants pair directly with a MacBook and require no companion app or keyboard remapping.
 
+## Schematic
+
+![Schematic Diagram](wiring-schematic.png)
+
 ## Choose a variant
 
 | Variant     | Controls                                                 | Printed width | Folder                                          |
@@ -26,10 +30,6 @@ Each variant folder contains its own firmware, parametric OpenSCAD enclosure, re
 | USB-C data cable                             |            1 |            1 | Used for flashing the ESP32 and charging through the TP4056        |
 
 You will also need a soldering iron and VS Code with the PlatformIO extension, or the PlatformIO CLI.
-
-## Schematic
-
-![Schematic Diagram](wiring-schematic.png)
 
 ## Repository layout
 
