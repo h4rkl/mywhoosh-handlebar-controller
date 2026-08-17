@@ -1,162 +1,138 @@
-# ESP32 BLE Keyboard library
+# MyWhoosh ESP32-C3 Handlebar Shifter
 
-This library allows you to make the ESP32 act as a Bluetooth Keyboard and control what it does.  
-You might also be interested in:
-- [ESP32-BLE-Mouse](https://github.com/T-vK/ESP32-BLE-Mouse)
-- [ESP32-BLE-Gamepad](https://github.com/lemmingDev/ESP32-BLE-Gamepad)
+A compact two-button Bluetooth Low Energy keyboard for shifting in **MyWhoosh on macOS**. The controller pairs directly with a MacBook and sends MyWhoosh's standard keyboard shortcuts:
 
+- Upshift: `i`
+- Downshift: `k`
 
-## Features
+No companion app or key remapping is required. The firmware, vendored BLE keyboard library, parametric enclosure source, and ready-to-slice STL files are all included.
 
- - [x] Send key strokes
- - [x] Send text
- - [x] Press/release individual keys
- - [x] Media keys are supported
- - [ ] Read Numlock/Capslock/Scrolllock state
- - [x] Set battery level (basically works, but doesn't show up in Android's status bar)
- - [x] Compatible with Android
- - [x] Compatible with Windows
- - [x] Compatible with Linux
- - [x] Compatible with MacOS X (not stable, some people have issues, doesn't work with old devices)
- - [x] Compatible with iOS (not stable, some people have issues, doesn't work with old devices)
+## What you need
 
-## Installation
-- (Make sure you can use the ESP32 with the Arduino IDE. [Instructions can be found here.](https://github.com/espressif/arduino-esp32#installation-instructions))
-- [Download the latest release of this library from the release page.](https://github.com/T-vK/ESP32-BLE-Keyboard/releases)
-- In the Arduino IDE go to "Sketch" -> "Include Library" -> "Add .ZIP Library..." and select the file you just downloaded.
-- You can now go to "File" -> "Examples" -> "ESP32 BLE Keyboard" and select any of the examples to get started.
+| Item | Qty | Notes |
+| --- | ---: | --- |
+| ESP32-C3 SuperMini | 1 | USB-C version; approximately 23.5 × 18.5 mm |
+| 12 × 12 × 7.3 mm tactile switch | 2 | The common switches supplied with coloured caps |
+| Thin stranded or silicone wire | — | Three conductors are enough when the buttons share ground |
+| Zip tie, up to 5 mm wide | 2 | For the included 31.8 mm handlebar mount |
+| USB-C cable and USB power source | 1 | Used for flashing and powering the controller |
+| Printed bottom and lid | 1 each | PETG recommended |
 
-## Example
+You will also need a soldering iron and a computer with VS Code plus the PlatformIO extension (or the PlatformIO CLI).
 
-``` C++
-/**
- * This example turns the ESP32 into a Bluetooth LE keyboard that writes the words, presses Enter, presses a media key and then Ctrl+Alt+Delete
- */
-#include <BleKeyboard.h>
+## Repository layout
 
-BleKeyboard bleKeyboard;
-
-void setup() {
-  Serial.begin(115200);
-  Serial.println("Starting BLE work!");
-  bleKeyboard.begin();
-}
-
-void loop() {
-  if(bleKeyboard.isConnected()) {
-    Serial.println("Sending 'Hello world'...");
-    bleKeyboard.print("Hello world");
-
-    delay(1000);
-
-    Serial.println("Sending Enter key...");
-    bleKeyboard.write(KEY_RETURN);
-
-    delay(1000);
-
-    Serial.println("Sending Play/Pause media key...");
-    bleKeyboard.write(KEY_MEDIA_PLAY_PAUSE);
-
-    delay(1000);
-    
-   //
-   // Below is an example of pressing multiple keyboard modifiers 
-   // which by default is commented out. 
-   // 
-   /* Serial.println("Sending Ctrl+Alt+Delete...");
-    bleKeyboard.press(KEY_LEFT_CTRL);
-    bleKeyboard.press(KEY_LEFT_ALT);
-    bleKeyboard.press(KEY_DELETE);
-    delay(100);
-    bleKeyboard.releaseAll();
-    */
-
-  }
-  Serial.println("Waiting 5 seconds...");
-  delay(5000);
-}
+```text
+.
+├── platformio.ini                       # Reproducible ESP32-C3 build configuration
+├── src/main.cpp                         # MyWhoosh shifter firmware
+├── lib/ESP32_BLE_Keyboard/              # Vendored BLE HID keyboard library
+└── mechanical/
+    ├── mywhoosh-shifter-enclosure.scad  # Parametric enclosure source
+    └── stl/
+        ├── bottom.stl                   # Ready-to-slice handlebar body
+        └── lid.stl                      # Ready-to-slice two-button lid
 ```
 
-## API docs
-The BleKeyboard interface is almost identical to the Keyboard Interface, so you can use documentation right here:
-https://www.arduino.cc/reference/en/language/functions/usb/keyboard/
+## Wiring
 
-Just remember that you have to use `bleKeyboard` instead of just `Keyboard` and you need these two lines at the top of your script:
-```
-#include <BleKeyboard.h>
-BleKeyboard bleKeyboard;
-```
+The firmware enables the ESP32's internal pull-up resistors, so each button connects its GPIO pin to ground when pressed.
 
-In addition to that you can send media keys (which is not possible with the USB keyboard library). Supported are the following:
-- KEY_MEDIA_NEXT_TRACK
-- KEY_MEDIA_PREVIOUS_TRACK
-- KEY_MEDIA_STOP
-- KEY_MEDIA_PLAY_PAUSE
-- KEY_MEDIA_MUTE
-- KEY_MEDIA_VOLUME_UP
-- KEY_MEDIA_VOLUME_DOWN
-- KEY_MEDIA_WWW_HOME
-- KEY_MEDIA_LOCAL_MACHINE_BROWSER // Opens "My Computer" on Windows
-- KEY_MEDIA_CALCULATOR
-- KEY_MEDIA_WWW_BOOKMARKS
-- KEY_MEDIA_WWW_SEARCH
-- KEY_MEDIA_WWW_STOP
-- KEY_MEDIA_WWW_BACK
-- KEY_MEDIA_CONSUMER_CONTROL_CONFIGURATION // Media Selection
-- KEY_MEDIA_EMAIL_READER
+| Function | ESP32-C3 SuperMini pin | Other switch terminal | Keystroke |
+| --- | --- | --- | --- |
+| Upshift | GPIO 3 | GND | `i` |
+| Downshift | GPIO 4 | GND | `k` |
 
-There is also Bluetooth specific information that you can set (optional):
-Instead of `BleKeyboard bleKeyboard;` you can do `BleKeyboard bleKeyboard("Bluetooth Device Name", "Bluetooth Device Manufacturer", 100);`. (Max lenght is 15 characters, anything beyond that will be truncated.)  
-The third parameter is the initial battery level of your device. To adjust the battery level later on you can simply call e.g.  `bleKeyboard.setBatteryLevel(50)` (set battery level to 50%).  
-By default the battery level will be set to 100%, the device name will be `ESP32 Bluetooth Keyboard` and the manufacturer will be `Espressif`.  
-There is also a `setDelay` method to set a delay between each key event. E.g. `bleKeyboard.setDelay(10)` (10 milliseconds). The default is `8`.  
-This feature is meant to compensate for some applications and devices that can't handle fast input and will skip letters if too many keys are sent in a small time frame.  
+On a four-leg tactile switch, the two legs on each side are already connected internally. Use a leg from one side for GPIO and a leg from the opposite side for GND. The two switches may share one GND wire.
 
-## NimBLE-Mode
-The NimBLE mode enables a significant saving of RAM and FLASH memory.
-
-### Comparison (SendKeyStrokes.ino at compile-time)
-
-**Standard**
-```
-RAM:   [=         ]   9.3% (used 30548 bytes from 327680 bytes)
-Flash: [========  ]  75.8% (used 994120 bytes from 1310720 bytes)
+```text
+GPIO 3 ─── [ UP button ] ───┐
+                            ├── GND
+GPIO 4 ── [ DOWN button ] ──┘
 ```
 
-**NimBLE mode**
+GPIO 3 and GPIO 4 avoid the ESP32-C3 SuperMini's usual boot-strapping pins. If you change the wiring, update `kUpshiftPin` and `kDownshiftPin` near the top of `src/main.cpp`.
+
+## Build and flash
+
+1. Clone or download this repository and open its root folder in VS Code.
+2. Install the **PlatformIO IDE** extension if it is not already installed.
+3. Connect the ESP32-C3 SuperMini over USB-C.
+4. Select **PlatformIO: Upload**, or run:
+
+   ```sh
+   pio run --target upload
+   ```
+
+The first build downloads the pinned Espressif platform. The BLE keyboard library is already in this repository.
+
+If uploading does not start, hold the board's **BOOT** button, tap **RESET**, release **BOOT**, and upload again. Serial diagnostics are available at 115200 baud:
+
+```sh
+pio device monitor
 ```
-RAM:   [=         ]   8.3% (used 27180 bytes from 327680 bytes)
-Flash: [====      ]  44.2% (used 579158 bytes from 1310720 bytes)
+
+## Pair with the MacBook
+
+1. Power the controller. USB from the Mac, a USB charger, or a small USB power bank all work.
+2. On the Mac, open **System Settings → Bluetooth**.
+3. Select **MyWhooshShift** when it appears and complete pairing. If Keyboard Setup Assistant opens, identify it as a standard ANSI keyboard.
+4. Open TextEdit and press each shifter button once. The buttons should type `i` and `k`.
+5. Open MyWhoosh, start a ride, keep the game window focused, and test both shifts.
+
+The firmware sends one keystroke per physical press. Its 30 ms debounce logic prevents switch bounce and deliberately does not repeat when a button is held.
+
+If the Mac has an older pairing saved under the same name, choose **Forget This Device**, restart the controller, and pair it again.
+
+## Print the enclosure
+
+Ready-to-slice files are in `mechanical/stl/`. The model is sized for a typical 23.5 × 18.5 mm ESP32-C3 SuperMini, 12 mm switches, 5 mm zip ties, and a 31.8 mm handlebar.
+
+Recommended slicer settings:
+
+- PETG for better heat and impact resistance; PLA is suitable for an indoor trainer
+- 0.20 mm layer height
+- 3 walls/perimeters
+- 25–30% infill
+- No supports
+- Bottom: open side facing up
+- Lid: flat outside face on the build plate
+
+Print a small fit test if the dimensions of your ESP32 clone or button caps differ. The principal clearances are named at the top of `mechanical/mywhoosh-shifter-enclosure.scad`. To regenerate the supplied STLs with OpenSCAD:
+
+```sh
+openscad -o mechanical/stl/bottom.stl -D 'part="bottom"' mechanical/mywhoosh-shifter-enclosure.scad
+openscad -o mechanical/stl/lid.stl -D 'part="lid"' mechanical/mywhoosh-shifter-enclosure.scad
 ```
 
-### Comparison (SendKeyStrokes.ino at run-time)
+## Assembly
 
-|   | Standard | NimBLE mode | difference
-|---|--:|--:|--:|
-| `ESP.getHeapSize()`   | 296.804 | 321.252 | **+ 24.448**  |
-| `ESP.getFreeHeap()`   | 143.572 | 260.764 | **+ 117.192** |
-| `ESP.getSketchSize()` | 994.224 | 579.264 | **- 414.960** |
+1. Flash the ESP32 and confirm that it pairs before soldering it into the housing.
+2. Solder GPIO 3 and GPIO 4 to their respective switches, then connect the opposite terminal of both switches to GND.
+3. Press the switches into the guides on the underside of the lid. Use a small spot of hot glue if your switch bodies are undersized.
+4. Slide the ESP32 into the board rails with its USB-C socket facing the case opening.
+5. Route wires away from the lid skirt and snap the lid into the bottom.
+6. Pass two zip ties through the paired floor slots, place the curved feet against the handlebar, and tighten evenly.
 
-## How to activate NimBLE mode?
+The enclosure is not waterproof. Sweat-resistant coating on the PCB and a thin gasket around the lid are sensible additions for heavy indoor use; do not block the USB opening if it remains your power connection.
 
-### ArduinoIDE: 
-Uncomment the first line in BleKeyboard.h
-```C++
-#define USE_NIMBLE
-```
+## Battery power
 
-### PlatformIO:
-Change your `platformio.ini` to the following settings
-```ini
-lib_deps = 
-  NimBLE-Arduino
+The supplied enclosure is the compact USB-powered version. A small USB power bank is the simplest cordless power source.
 
-build_flags = 
-  -D USE_NIMBLE
-```
+Do **not** connect a bare LiPo directly to the ESP32's `5V` pin, and do not treat a TP4056 charger alone as a 5 V regulator. A built-in LiPo version needs a protected cell, a charger/power-path circuit, and a suitable regulated output (typically a 5 V boost supply into `5V`, or a board-specific battery input). Battery dimensions and protection boards vary, so they are intentionally not included in this fixed-size enclosure.
+
+## Troubleshooting
+
+| Symptom | Check |
+| --- | --- |
+| Device does not appear in Bluetooth | Confirm the board is powered; open the serial monitor and look for the ready message |
+| It pairs but does not shift | Test in TextEdit, confirm lowercase `i`/`k`, and ensure MyWhoosh has keyboard focus |
+| A button works backwards | Swap the GPIO 3/GPIO 4 wires or exchange `kUpshiftKey` and `kDownshiftKey` |
+| Shifts happen without pressing | Check for a GPIO-to-GND short and verify the switch uses terminals from opposite sides |
+| Upload port is missing | Use the BOOT/RESET sequence above and try a known data-capable USB cable |
+| Lid or board fit is too tight | Increase `fit_clearance` or `board_clearance` in the SCAD file and regenerate the STL |
 
 ## Credits
 
-Credits to [chegewara](https://github.com/chegewara) and [the authors of the USB keyboard library](https://github.com/arduino-libraries/Keyboard/) as this project is heavily based on their work!  
-Also, credits to [duke2421](https://github.com/T-vK/ESP32-BLE-Keyboard/issues/1) who helped a lot with testing, debugging and fixing the device descriptor!
-And credits to [sivar2311](https://github.com/sivar2311) for adding NimBLE support, greatly reducing the memory footprint, fixing advertising issues and for adding the `setDelay` method.
+BLE HID support is based on [T-vK's ESP32-BLE-Keyboard](https://github.com/T-vK/ESP32-BLE-Keyboard), vendored here so the firmware can be built from a clean checkout.
