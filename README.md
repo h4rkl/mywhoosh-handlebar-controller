@@ -4,28 +4,32 @@ A printable, battery-powered Bluetooth Low Energy keyboard controller for **MyWh
 
 ## Choose a variant
 
-| Variant | Controls | Printed width | Folder |
-| --- | --- | ---: | --- |
-| Two button | Shift down `k`, shift up `i` | 64 mm | [`variants/two-button`](variants/two-button/) |
-| Four button | Inline rectangle: steer left, shift down/up, steer right | 80 × 38 mm | [`variants/four-button`](variants/four-button/) |
+| Variant     | Controls                                                 | Printed width | Folder                                          |
+| ----------- | -------------------------------------------------------- | ------------: | ----------------------------------------------- |
+| Two button  | Shift down `k`, shift up `i`                             |         64 mm | [`variants/two-button`](variants/two-button/)   |
+| Four button | Inline rectangle: steer left, shift down/up, steer right |    80 × 38 mm | [`variants/four-button`](variants/four-button/) |
 
 Each variant folder contains its own firmware, parametric OpenSCAD enclosure, ready-to-slice bottom and lid STLs, and variant-specific instructions. Do not mix a bottom and lid from different variants because their lengths and snap positions differ.
 
 ## What you need
 
-| Item | Two button | Four button | Notes |
-| --- | ---: | ---: | --- |
-| ESP32-C3 SuperMini | 1 | 1 | USB-C version; approximately 23.5 × 18.5 mm |
-| 12 × 12 × 7.3 mm tactile switch | 2 | 4 | Common switches with coloured caps |
-| Thin stranded or silicone wire | 3 conductors | 5 conductors | Buttons share one ground connection; allow more for battery wiring |
-| Zip tie, up to 5 mm wide | 2 | 2 | Enclosure saddle is sized for a 31.8 mm handlebar |
-| Single-cell LiPo, 3.7 V | 1 | 1 | Choose a capacity and physical size that fit the enclosure |
-| TP4056 Type-C charger module with protection | 1 | 1 | For charging and protecting one Li-ion/LiPo cell |
-| Regulated 5 V boost converter | 1 | 1 | Supplies the ESP32 from the varying battery voltage |
-| 10 kΩ resistor | 1 | 1 | External pull-up for the GPIO3 Shift Up/wake button |
-| USB-C data cable | 1 | 1 | Used for flashing the ESP32 and charging through the TP4056 |
+| Item                                         |   Two button |  Four button | Notes                                                              |
+| -------------------------------------------- | -----------: | -----------: | ------------------------------------------------------------------ |
+| ESP32-C3 SuperMini                           |            1 |            1 | USB-C version; approximately 23.5 × 18.5 mm                        |
+| 12 × 12 × 7.3 mm tactile switch              |            2 |            4 | Common switches with coloured caps                                 |
+| Thin stranded or silicone wire               | 3 conductors | 5 conductors | Buttons share one ground connection; allow more for battery wiring |
+| Zip tie, up to 5 mm wide                     |            2 |            2 | Enclosure saddle is sized for a 31.8 mm handlebar                  |
+| Single-cell LiPo, 3.7 V                      |            1 |            1 | Choose a capacity and physical size that fit the enclosure         |
+| TP4056 Type-C charger module with protection |            1 |            1 | For charging and protecting one Li-ion/LiPo cell                   |
+| Regulated 5 V boost converter                |            1 |            1 | Supplies the ESP32 from the varying battery voltage                |
+| 10 kΩ resistor                               |            1 |            1 | External pull-up for the GPIO3 Shift Up/wake button                |
+| USB-C data cable                             |            1 |            1 | Used for flashing the ESP32 and charging through the TP4056        |
 
 You will also need a soldering iron and VS Code with the PlatformIO extension, or the PlatformIO CLI.
+
+## Schematic
+
+![Schematic Diagram](wiring-schematic.png)
 
 ## Repository layout
 
@@ -52,12 +56,12 @@ You will also need a soldering iron and VS Code with the PlatformIO extension, o
 
 Every button connects its GPIO to GND when pressed, and the firmware enables each internal pull-up. Shift Up on GPIO3 is the only deep-sleep wake input. Connect a 10 kΩ resistor from GPIO3 to `3V3` for dependable wake-up; the other controls need no external resistor.
 
-| Function | GPIO | MyWhoosh keystroke | Variant |
-| --- | ---: | --- | --- |
-| Shift up / wake | 3 | `i` | Both |
-| Shift down | 4 | `k` | Both |
-| Steer left | 5 | Left Arrow | Four button only |
-| Steer right | 1 | Right Arrow | Four button only |
+| Function        | GPIO | MyWhoosh keystroke | Variant          |
+| --------------- | ---: | ------------------ | ---------------- |
+| Shift up / wake |    3 | `i`                | Both             |
+| Shift down      |    4 | `k`                | Both             |
+| Steer left      |    5 | Left Arrow         | Four button only |
+| Steer right     |    1 | Right Arrow        | Four button only |
 
 On a four-leg tactile switch, the two legs on each side are already connected internally. Connect the GPIO to one side and GND to the opposite side. All buttons can share one GND wire.
 
@@ -153,15 +157,15 @@ The battery, charger, boost converter, and wiring must be insulated and restrain
 
 ## Troubleshooting
 
-| Symptom | Check |
-| --- | --- |
-| Device does not appear | Confirm power and look for the ready message in the serial monitor |
-| Controls do not work | Test in TextEdit and ensure MyWhoosh has keyboard focus |
-| Shift direction is reversed | Swap GPIO 3/4 wires or the up/down key constants |
-| Steering is reversed | Swap GPIO 5/1 wires or the left/right key constants |
-| Actions occur without pressing | Check for GPIO-to-GND shorts and switch terminal orientation |
+| Symptom                               | Check                                                                                                                         |
+| ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Device does not appear                | Confirm power and look for the ready message in the serial monitor                                                            |
+| Controls do not work                  | Test in TextEdit and ensure MyWhoosh has keyboard focus                                                                       |
+| Shift direction is reversed           | Swap GPIO 3/4 wires or the up/down key constants                                                                              |
+| Steering is reversed                  | Swap GPIO 5/1 wires or the left/right key constants                                                                           |
+| Actions occur without pressing        | Check for GPIO-to-GND shorts and switch terminal orientation                                                                  |
 | Shift Up does not wake the controller | Confirm the `+ / power` control is wired to GPIO3, check its 10 kΩ pull-up to `3V3`, and verify the button pulls GPIO3 to GND |
-| Enclosure is too tight | Adjust `fit_clearance` or `board_clearance` in that variant's SCAD file |
+| Enclosure is too tight                | Adjust `fit_clearance` or `board_clearance` in that variant's SCAD file                                                       |
 
 ## Credits
 
