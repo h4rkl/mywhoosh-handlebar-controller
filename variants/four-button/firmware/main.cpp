@@ -5,8 +5,12 @@ namespace {
 
 constexpr uint8_t kUpshiftPin = 3;
 constexpr uint8_t kDownshiftPin = 4;
-constexpr char kUpshiftKey = 'i';
-constexpr char kDownshiftKey = 'k';
+constexpr uint8_t kSteerLeftPin = 5;
+constexpr uint8_t kSteerRightPin = 6;
+constexpr uint8_t kUpshiftKey = 'i';
+constexpr uint8_t kDownshiftKey = 'k';
+constexpr uint8_t kSteerLeftKey = KEY_LEFT_ARROW;
+constexpr uint8_t kSteerRightKey = KEY_RIGHT_ARROW;
 constexpr uint32_t kDebounceMs = 30;
 
 BleKeyboard keyboard("MyWhooshShift", "DIY", 100);
@@ -47,15 +51,17 @@ class DebouncedButton {
 
 DebouncedButton upshift(kUpshiftPin);
 DebouncedButton downshift(kDownshiftPin);
+DebouncedButton steer_left(kSteerLeftPin);
+DebouncedButton steer_right(kSteerRightPin);
 bool was_connected = false;
 
-void sendShift(char key, const char* label) {
+void sendAction(uint8_t key, const char* label) {
   if (!keyboard.isConnected()) {
     return;
   }
 
-  keyboard.write(static_cast<uint8_t>(key));
-  Serial.printf("%s (%c)\n", label, key);
+  keyboard.write(key);
+  Serial.println(label);
 }
 
 }  // namespace
@@ -64,6 +70,8 @@ void setup() {
   Serial.begin(115200);
   upshift.begin();
   downshift.begin();
+  steer_left.begin();
+  steer_right.begin();
 
   keyboard.setDelay(10);
   keyboard.begin();
@@ -83,10 +91,16 @@ void loop() {
   }
 
   if (upshift.pressed(now)) {
-    sendShift(kUpshiftKey, "Upshift");
+    sendAction(kUpshiftKey, "Upshift (i)");
   }
   if (downshift.pressed(now)) {
-    sendShift(kDownshiftKey, "Downshift");
+    sendAction(kDownshiftKey, "Downshift (k)");
+  }
+  if (steer_left.pressed(now)) {
+    sendAction(kSteerLeftKey, "Steer left (Left Arrow)");
+  }
+  if (steer_right.pressed(now)) {
+    sendAction(kSteerRightKey, "Steer right (Right Arrow)");
   }
 
   delay(2);

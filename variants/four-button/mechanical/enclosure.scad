@@ -1,5 +1,5 @@
 // MyWhoosh BLE shifter enclosure
-// ESP32-C3 SuperMini + two 12 x 12 mm tactile switches
+// ESP32-C3 SuperMini + four 12 x 12 mm tactile switches
 // Units: millimetres. Change `part` to export one component.
 
 part = "both";  // "bottom", "lid", or "both"
@@ -11,7 +11,7 @@ wall = 2.0;
 roof = 2.4;
 
 // Case
-case_length = 64;
+case_length = 80;
 case_width = 38;
 corner_radius = 5;
 bottom_height = 15;
@@ -28,12 +28,19 @@ usb_height = 4.5;
 switch_body = 12.0;
 switch_clearance = 0.3;
 cap_hole = 10.2;
-button_spacing = 27;
+button_spacing = 19;
+button_positions = [
+    -1.5 * button_spacing,
+    -0.5 * button_spacing,
+     0.5 * button_spacing,
+     1.5 * button_spacing
+];
+button_labels = ["<", "-", "+", ">"];
 
 // Mounting
 zip_tie_width = 5.0;
 zip_tie_thickness = 2.0;
-strap_spacing = 34;
+strap_spacing = 46;
 handlebar_diameter = 31.8;
 mount_depth = 4.0;
 
@@ -102,7 +109,7 @@ module bottom() {
                     ], center = true);
 
             // Internal snap detents for the lid; they do not perforate the outer wall.
-            for (x = [-20, 20], y = [-1, 1])
+            for (x = [-27, 27], y = [-1, 1])
                 translate([x, y * (case_width / 2 - wall + 0.35), bottom_height - 4.2])
                     cube([4.0, 1.0, 1.4], center = true);
         }
@@ -144,18 +151,30 @@ module lid() {
                 translate([x * (skirt_outer_length - skirt_wall) / 2, 0, roof + skirt_height / 2])
                     cube([skirt_wall, skirt_outer_width - 6, skirt_height], center = true);
 
-            for (x = [-button_spacing / 2, button_spacing / 2])
+            for (x = button_positions)
                 switch_guide(x);
 
             // Small bumps engage the bottom's internal detents.
-            for (x = [-20, 20], y = [-1, 1])
+            for (x = [-27, 27], y = [-1, 1])
                 translate([x, y * skirt_outer_width / 2, roof + 1.8])
                     cube([3.6, 0.7, 1.0], center = true);
         }
 
-        for (x = [-button_spacing / 2, button_spacing / 2])
+        for (x = button_positions)
             translate([x, 0, -0.1])
                 cylinder(d = cap_hole, h = roof + 0.2);
+
+        // Engraved outside-face labels match the documented button order.
+        for (i = [0 : len(button_positions) - 1])
+            translate([button_positions[i], -12, -0.1])
+                linear_extrude(height = 0.8)
+                    text(
+                        button_labels[i],
+                        size = 4,
+                        halign = "center",
+                        valign = "center",
+                        font = "Liberation Sans:style=Bold"
+                    );
     }
 }
 
