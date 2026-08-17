@@ -22,8 +22,7 @@ Each variant folder contains its own firmware, parametric OpenSCAD enclosure, re
 | Single-cell LiPo, 3.7 V | 1 | 1 | Choose a capacity and physical size that fit the enclosure |
 | TP4056 Type-C charger module with protection | 1 | 1 | For charging and protecting one Li-ion/LiPo cell |
 | Regulated 5 V boost converter | 1 | 1 | Supplies the ESP32 from the varying battery voltage |
-| Small power switch | 1 | 1 | Recommended between protected battery output and boost input |
-| 10 kΩ resistor | 2 | 4 | External wake-pin pull-ups recommended for reliable deep sleep |
+| 10 kΩ resistor | 1 | 1 | External pull-up for the GPIO3 Shift Up/wake button |
 | USB-C data cable | 1 | 1 | Used for flashing the ESP32 and charging through the TP4056 |
 
 You will also need a soldering iron and VS Code with the PlatformIO extension, or the PlatformIO CLI.
@@ -51,18 +50,18 @@ You will also need a soldering iron and VS Code with the PlatformIO extension, o
 
 ## Wiring
 
-Every button connects its GPIO to GND when pressed. The firmware enables each internal pull-up. For dependable deep-sleep wake-up, also connect a 10 kΩ resistor from each button GPIO to `3V3`.
+Every button connects its GPIO to GND when pressed, and the firmware enables each internal pull-up. Shift Up on GPIO3 is the only deep-sleep wake input. Connect a 10 kΩ resistor from GPIO3 to `3V3` for dependable wake-up; the other controls need no external resistor.
 
 | Function | GPIO | MyWhoosh keystroke | Variant |
 | --- | ---: | --- | --- |
-| Shift up | 3 | `i` | Both |
+| Shift up / wake | 3 | `i` | Both |
 | Shift down | 4 | `k` | Both |
 | Steer left | 5 | Left Arrow | Four button only |
 | Steer right | 1 | Right Arrow | Four button only |
 
 On a four-leg tactile switch, the two legs on each side are already connected internally. Connect the GPIO to one side and GND to the opposite side. All buttons can share one GND wire.
 
-GPIO 1 and GPIO 3–5 support deep-sleep wake on the ESP32-C3 and avoid its usual boot-strapping pins. The four-button firmware deliberately uses arrow keys rather than `a` and `d` for steering.
+The firmware deliberately enables wake-up only on GPIO3 so the `+ / power` control has one clear purpose when the controller is asleep. The four-button firmware uses arrow keys rather than `a` and `d` for steering.
 
 ## Build and flash
 
@@ -91,7 +90,7 @@ If uploading does not start, hold **BOOT**, tap **RESET**, release **BOOT**, and
 3. Test in TextEdit. Shift buttons type `i` and `k`; the four-button steering controls move the cursor left and right.
 4. Open MyWhoosh, start a ride, keep the game focused, and test the controls.
 
-Each input is debounced for 30 ms and sends one keystroke per physical press. A held button does not repeat. After 15 minutes without a button press, the controller enters deep sleep and disconnects from Bluetooth. Any button wakes it; the wake press is consumed, so release that button, wait for the Mac to reconnect, then press again to perform the action. Change `kSleepTimeoutMs` in the selected variant's `firmware/main.cpp` to use another timeout.
+Each input is debounced for 30 ms and sends one keystroke per physical press. A held button does not repeat. After 15 minutes without a button press, the controller enters deep sleep and disconnects from Bluetooth. Only Shift Up—the lid control marked `+ / power`—wakes it. The wake press is consumed, so release the button, wait for the Mac to reconnect, then press again to shift up. Change `kSleepTimeoutMs` in the selected variant's `firmware/main.cpp` to use another timeout.
 
 If an old pairing causes problems, choose **Forget This Device**, restart the controller, and pair it again.
 
@@ -113,7 +112,7 @@ Assembly is the same for either variant:
 
 1. Prototype the complete battery, charger, boost converter, ESP32, and button circuit on the breadboard.
 2. Set and verify the disconnected boost converter at 5.0 V, then power, flash, and pair the ESP32.
-3. Solder each GPIO to its assigned switch and connect the opposite switch terminals to a shared GND.
+3. Solder each GPIO to its assigned switch, connect the opposite switch terminals to a shared GND, and add the 10 kΩ pull-up between GPIO3 and `3V3`.
 4. Fit switches into the guides beneath the labelled lid. Add a small spot of hot glue only if needed.
 5. Insulate every power module and connection with heat-shrink or suitable electrical insulation.
 6. Position the battery without bending or clamping its pouch, then secure the rigid modules so they cannot rub against it.
@@ -135,16 +134,18 @@ TP4056 Type-C module
   B+ / B-  ◄──── single-cell 3.7 V LiPo
  OUT+ / OUT-
       │
-      ├── power switch ── 5 V boost converter ── ESP32 5V
+      ├────────────────── 5 V boost converter ── ESP32 5V
       └────────────────────────────────────────── ESP32 GND
 ```
+
+There is no separate power switch. The protected battery output remains connected to the boost converter. After the inactivity timeout, the ESP32 enters deep sleep; pressing the Shift Up `+ / power` control wakes it. The other buttons do nothing until the controller wakes and reconnects.
 
 Important battery rules:
 
 - Verify battery-connector polarity with a multimeter; matching connectors do not guarantee matching wire polarity.
 - Never connect the LiPo or TP4056 battery output directly to the ESP32 `3V3` pin. A fully charged single-cell LiPo can reach approximately 4.2 V.
 - Do not connect the TP4056 output directly to the ESP32 `5V` pin and assume it is 5 V; use the regulated boost stage.
-- Turn the controller off while charging. A basic TP4056 board is a charger/protection module, not a load-sharing power-path controller, and an active load can interfere with normal charge termination.
+- Let the controller enter deep sleep before charging and do not operate it while charging. A basic TP4056 board has no load-sharing power path; deep sleep minimizes the connected load but does not electrically disconnect it. Use a charger module with proper power-path/load-sharing support if the controller must operate reliably while charging.
 - Avoid powering the ESP32 simultaneously from its USB-C socket and the boost converter unless isolation or a proper power-path circuit has been added.
 - Do not bend, crush, puncture, tightly clamp, or solder directly to the LiPo pouch. Stop using a swollen, damaged, hot, or leaking cell.
 
@@ -159,7 +160,7 @@ The battery, charger, boost converter, and wiring must be insulated and restrain
 | Shift direction is reversed | Swap GPIO 3/4 wires or the up/down key constants |
 | Steering is reversed | Swap GPIO 5/1 wires or the left/right key constants |
 | Actions occur without pressing | Check for GPIO-to-GND shorts and switch terminal orientation |
-| A button does not wake the controller | Confirm the four-button right control is wired to GPIO1, check the 10 kΩ pull-up, and verify the button pulls the pin to GND |
+| Shift Up does not wake the controller | Confirm the `+ / power` control is wired to GPIO3, check its 10 kΩ pull-up to `3V3`, and verify the button pulls GPIO3 to GND |
 | Enclosure is too tight | Adjust `fit_clearance` or `board_clearance` in that variant's SCAD file |
 
 ## Credits

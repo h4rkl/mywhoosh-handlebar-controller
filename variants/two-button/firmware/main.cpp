@@ -10,9 +10,7 @@ constexpr uint8_t kUpshiftKey = 'i';
 constexpr uint8_t kDownshiftKey = 'k';
 constexpr uint32_t kDebounceMs = 30;
 constexpr uint32_t kSleepTimeoutMs = 15UL * 60UL * 1000UL;
-constexpr uint64_t kWakePinMask =
-    (1ULL << kUpshiftPin) |
-    (1ULL << kDownshiftPin);
+constexpr uint64_t kWakePinMask = 1ULL << kUpshiftPin;
 
 BleKeyboard keyboard("MyWhooshShift", "DIY", 100);
 
@@ -119,7 +117,7 @@ void setup() {
   keyboard.begin();
   last_activity_at = millis();
   if (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_GPIO) {
-    Serial.println("Woken by a shifter button; release it, then press again to act.");
+    Serial.println("Woken by Shift Up; release it, then press again to shift.");
   }
   Serial.println("MyWhoosh shifter ready; pair Bluetooth device 'MyWhooshShift'.");
 }

@@ -36,6 +36,7 @@ button_positions = [
      1.5 * button_spacing
 ];
 button_labels = ["<", "-", "+", ">"];
+upshift_index = 2;
 
 // Mounting
 zip_tie_width = 5.0;
@@ -132,6 +133,32 @@ module switch_guide(x) {
             cube([guide_wall, guide_inner, guide_height], center = true);
 }
 
+// Font-independent power glyph combined with the Shift Up plus sign.
+module power_symbol_2d() {
+    union() {
+        difference() {
+            difference() {
+                circle(d = 4.0);
+                circle(d = 2.7);
+            }
+            translate([-1.1, 1.2]) square([2.2, 1.2]);
+        }
+        translate([-0.35, 0.35]) square([0.7, 2.5]);
+    }
+}
+
+module engraved_button_label(i) {
+    if (i == upshift_index) {
+        translate([-2.7, 0])
+            text("+", size = 4, halign = "center", valign = "center",
+                 font = "Liberation Sans:style=Bold");
+        translate([2.5, 0]) power_symbol_2d();
+    } else {
+        text(button_labels[i], size = 4, halign = "center", valign = "center",
+             font = "Liberation Sans:style=Bold");
+    }
+}
+
 module lid() {
     skirt_outer_length = case_length - 2 * wall - 2 * fit_clearance;
     skirt_outer_width = case_width - 2 * wall - 2 * fit_clearance;
@@ -168,13 +195,7 @@ module lid() {
         for (i = [0 : len(button_positions) - 1])
             translate([button_positions[i], -12, -0.1])
                 linear_extrude(height = 0.8)
-                    text(
-                        button_labels[i],
-                        size = 4,
-                        halign = "center",
-                        valign = "center",
-                        font = "Liberation Sans:style=Bold"
-                    );
+                    engraved_button_label(i);
     }
 }
 

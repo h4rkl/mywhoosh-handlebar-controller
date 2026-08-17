@@ -1,0 +1,151 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-labelledby="title desc">
+  <title id="title">MyWhoosh ESP32-C3 controller wiring schematic</title>
+  <desc id="desc">Battery, charging, boost supply, and four isolated active-low buttons; Shift Up on GPIO3 is the sole deep-sleep wake input.</desc>
+  <defs>
+    <style>
+      .box { fill:#fff; stroke:#172033; stroke-width:3; rx:12; }
+      .module { fill:#f8fafc; stroke:#172033; stroke-width:3; }
+      .title { font:700 30px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; fill:#111827; }
+      .label { font:600 20px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; fill:#111827; }
+      .small { font:500 16px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; fill:#334155; }
+      .pin { font:700 17px ui-monospace,SFMono-Regular,Menlo,monospace; fill:#111827; }
+      .power { fill:none; stroke:#dc2626; stroke-width:5; stroke-linejoin:round; stroke-linecap:round; }
+      .ground { fill:none; stroke:#111827; stroke-width:5; stroke-linejoin:round; stroke-linecap:round; }
+      .signal { fill:none; stroke:#2563eb; stroke-width:5; stroke-linejoin:round; stroke-linecap:round; }
+      .logic { fill:none; stroke:#ea580c; stroke-width:5; stroke-linejoin:round; stroke-linecap:round; }
+      .thin { fill:none; stroke:#172033; stroke-width:3; stroke-linecap:round; }
+      .node-red { fill:#dc2626; }
+      .node-black { fill:#111827; }
+      .node-blue { fill:#2563eb; }
+      .node-orange { fill:#ea580c; }
+      .callout { fill:#fff7ed; stroke:#ea580c; stroke-width:2; rx:10; }
+    </style>
+  </defs>
+
+  <rect width="1600" height="1000" fill="#ffffff"/>
+  <text class="title" x="40" y="50">POWER CHAIN — BATTERY TO ESP32-C3</text>
+
+  <!-- LiPo -->
+  <rect class="module" x="40" y="105" width="190" height="150" rx="12"/>
+  <text class="label" x="135" y="160" text-anchor="middle">Single-cell LiPo</text>
+  <text class="label" x="135" y="195" text-anchor="middle">3.7 V</text>
+  <text class="pin" x="205" y="130" fill="#dc2626">+</text>
+  <text class="pin" x="205" y="235">−</text>
+
+  <!-- TP4056 -->
+  <rect class="module" x="325" y="90" width="270" height="190" rx="12"/>
+  <text class="label" x="460" y="140" text-anchor="middle">TP4056 USB-C</text>
+  <text class="label" x="460" y="172" text-anchor="middle">with protection</text>
+  <text class="pin" x="340" y="120">B+</text>
+  <text class="pin" x="340" y="252">B−</text>
+  <text class="pin" x="535" y="120">OUT+</text>
+  <text class="pin" x="535" y="252">OUT−</text>
+  <rect x="425" y="281" width="70" height="35" rx="8" fill="#fff" stroke="#172033" stroke-width="3"/>
+  <rect x="440" y="291" width="40" height="15" rx="7" fill="none" stroke="#172033" stroke-width="3"/>
+  <text class="small" x="460" y="340" text-anchor="middle">USB-C charging input</text>
+
+  <!-- Boost -->
+  <rect class="module" x="1010" y="90" width="270" height="190" rx="12"/>
+  <text class="label" x="1145" y="165" text-anchor="middle">5 V boost converter</text>
+  <text class="pin" x="1025" y="120">IN+</text>
+  <text class="pin" x="1025" y="252">IN−</text>
+  <text class="pin" x="1205" y="120">OUT+</text>
+  <text class="pin" x="1205" y="252">OUT−</text>
+
+  <!-- Power wiring -->
+  <path class="power" d="M230 120 H325"/>
+  <path class="ground" d="M230 240 H325"/>
+  <path class="power" d="M595 120 H1010"/>
+  <path class="ground" d="M595 250 H1010"/>
+  <path class="power" d="M1280 120 H1515 V850 H1320"/>
+  <path class="ground" d="M1280 250 H1480 V925 H1320"/>
+  <circle class="node-red" cx="230" cy="120" r="7"/><circle class="node-red" cx="325" cy="120" r="7"/>
+  <circle class="node-black" cx="230" cy="240" r="7"/><circle class="node-black" cx="325" cy="240" r="7"/>
+  <text class="small" x="1385" y="105" text-anchor="middle" fill="#dc2626">5.0 V</text>
+  <text class="small" x="1370" y="242" text-anchor="middle">GND</text>
+  <text class="small" x="802" y="105" text-anchor="middle" fill="#dc2626">Permanent supply — no power switch</text>
+
+  <rect class="callout" x="680" y="205" width="300" height="100"/>
+  <text class="label" x="830" y="243" text-anchor="middle" fill="#c2410c">Set boost output to 5.0 V</text>
+  <text class="small" x="830" y="275" text-anchor="middle">before connecting the ESP32</text>
+  <rect class="callout" x="40" y="305" width="310" height="58"/>
+  <text class="small" x="195" y="340" text-anchor="middle">Verify battery connector polarity</text>
+
+  <line x1="40" y1="410" x2="1560" y2="410" stroke="#94a3b8" stroke-width="2" stroke-dasharray="10 10"/>
+  <text class="title" x="40" y="460">BUTTON INPUTS — FOUR-BUTTON CONTROLLER</text>
+  <text class="small" x="40" y="492">Each button is normally open. Only Shift Up on GPIO3 wakes the controller from deep sleep.</text>
+
+  <!-- Sole external wake pull-up: GPIO3 Shift Up to ESP32 3V3. -->
+  <path class="logic" d="M1200 835 V535 H840"/>
+  <text class="pin" x="925" y="542" fill="#ea580c">ESP32 3V3</text>
+
+  <!-- Shared ground rail -->
+  <path class="ground" d="M160 790 H1270 V925 H1200"/>
+  <text class="pin" x="65" y="797">ESP32 GND</text>
+
+  <!-- White gaps make signal/3V3 crossings over the ground rail explicit non-junctions. -->
+  <path d="M1200 775 V805" fill="none" stroke="#fff" stroke-width="15"/>
+  <path class="logic" d="M1200 775 V805"/>
+  <path d="M340 775 V805 M590 775 V805 M840 775 V805 M1090 775 V805" fill="none" stroke="#fff" stroke-width="15"/>
+
+  <!-- Column helper: x positions 340, 590, 840, 1090 -->
+  <!-- GPIO3 wake pull-up resistor -->
+  <g class="thin">
+    <path d="M840 535 v18 l-12 10 24 14 -24 14 24 14 -24 14 12 10 v21"/>
+  </g>
+  <text class="small" x="865" y="590">10 kΩ wake pull-up</text>
+
+  <!-- Four electrically isolated signal drops -->
+  <path class="signal" d="M340 650 V835"/>
+  <path class="signal" d="M590 650 V835"/>
+  <path class="signal" d="M840 650 V835"/>
+  <path class="signal" d="M1090 650 V835"/>
+  <circle class="node-blue" cx="340" cy="650" r="8"/>
+  <circle class="node-blue" cx="590" cy="650" r="8"/>
+  <circle class="node-blue" cx="840" cy="650" r="8"/>
+  <circle class="node-blue" cx="1090" cy="650" r="8"/>
+
+  <!-- Normally-open switches, each branching from its own GPIO node to GND -->
+  <g>
+    <path class="signal" d="M340 650 H390"/><circle cx="390" cy="650" r="7" fill="#fff" stroke="#172033" stroke-width="3"/>
+    <circle cx="440" cy="650" r="7" fill="#fff" stroke="#172033" stroke-width="3"/><path class="thin" d="M396 642 L432 625"/><path class="ground" d="M440 657 V790"/>
+    <path class="signal" d="M590 650 H640"/><circle cx="640" cy="650" r="7" fill="#fff" stroke="#172033" stroke-width="3"/>
+    <circle cx="690" cy="650" r="7" fill="#fff" stroke="#172033" stroke-width="3"/><path class="thin" d="M646 642 L682 625"/><path class="ground" d="M690 657 V790"/>
+    <path class="signal" d="M840 650 H890"/><circle cx="890" cy="650" r="7" fill="#fff" stroke="#172033" stroke-width="3"/>
+    <circle cx="940" cy="650" r="7" fill="#fff" stroke="#172033" stroke-width="3"/><path class="thin" d="M896 642 L932 625"/><path class="ground" d="M940 657 V790"/>
+    <path class="signal" d="M1090 650 H1140"/><circle cx="1140" cy="650" r="7" fill="#fff" stroke="#172033" stroke-width="3"/>
+    <circle cx="1190" cy="650" r="7" fill="#fff" stroke="#172033" stroke-width="3"/><path class="thin" d="M1146 642 L1182 625"/><path class="ground" d="M1190 657 V790"/>
+  </g>
+
+  <!-- Button and GPIO labels -->
+  <text class="label" x="340" y="710" text-anchor="middle">STEER LEFT  ←</text>
+  <text class="pin" x="340" y="742" text-anchor="middle" fill="#2563eb">GPIO5</text>
+  <text class="label" x="590" y="710" text-anchor="middle">SHIFT DOWN  −</text>
+  <text class="pin" x="590" y="742" text-anchor="middle" fill="#2563eb">GPIO4</text>
+  <text class="label" x="840" y="710" text-anchor="middle">SHIFT UP  + / ⏻</text>
+  <text class="pin" x="840" y="742" text-anchor="middle" fill="#2563eb">GPIO3</text>
+  <text class="label" x="1090" y="710" text-anchor="middle">STEER RIGHT  →</text>
+  <text class="pin" x="1090" y="742" text-anchor="middle" fill="#2563eb">GPIO1</text>
+
+  <!-- ESP32-C3 module, with each GPIO pin aligned to its independent circuit -->
+  <rect class="module" x="245" y="835" width="1075" height="130" rx="12"/>
+  <text class="title" x="782" y="900" text-anchor="middle">ESP32-C3 SuperMini</text>
+  <text class="small" x="782" y="934" text-anchor="middle">BLE keyboard controller</text>
+  <circle class="node-blue" cx="340" cy="835" r="8"/><circle class="node-blue" cx="590" cy="835" r="8"/>
+  <circle class="node-blue" cx="840" cy="835" r="8"/><circle class="node-blue" cx="1090" cy="835" r="8"/>
+  <text class="pin" x="340" y="864" text-anchor="middle">GPIO5</text>
+  <text class="pin" x="590" y="864" text-anchor="middle">GPIO4</text>
+  <text class="pin" x="840" y="864" text-anchor="middle">GPIO3</text>
+  <text class="pin" x="1090" y="864" text-anchor="middle">GPIO1</text>
+  <text class="pin" x="1200" y="844" text-anchor="end" fill="#ea580c">3V3</text>
+  <text class="pin" x="1200" y="950" text-anchor="end">GND</text>
+  <text class="pin" x="1325" y="858" fill="#dc2626">5V</text>
+  <text class="pin" x="1325" y="933">GND</text>
+
+  <!-- Actual junction dots on shared rails -->
+  <circle class="node-orange" cx="840" cy="535" r="7"/>
+  <circle class="node-black" cx="440" cy="790" r="7"/><circle class="node-black" cx="690" cy="790" r="7"/>
+  <circle class="node-black" cx="940" cy="790" r="7"/><circle class="node-black" cx="1190" cy="790" r="7"/>
+
+  <text class="small" x="40" y="985">Two-button variant: omit GPIO5 and GPIO1. In both variants, only GPIO3 Shift Up wakes the controller.</text>
+</svg>
