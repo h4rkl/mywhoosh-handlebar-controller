@@ -28,7 +28,7 @@
   <rect class="module" x="40" y="105" width="260" height="170" rx="14"/>
   <text class="label" x="170" y="150" text-anchor="middle">Protected LiPo</text>
   <text class="label" x="170" y="182" text-anchor="middle">3.7 V rechargeable</text>
-  <text class="small" x="170" y="216" text-anchor="middle">Reference: 301230 / 100 mAh</text>
+  <text class="small" x="170" y="216" text-anchor="middle">Reference envelope: 301230</text>
   <text class="pin" x="272" y="132" fill="#dc2626">+</text>
   <text class="pin" x="272" y="258">−</text>
 
@@ -41,8 +41,8 @@
   <text class="title" x="1095" y="125" text-anchor="middle">nRF52840 nice!nano v2-compatible controller</text>
   <rect class="submodule" x="735" y="155" width="270" height="115" rx="12"/>
   <text class="label" x="870" y="195" text-anchor="middle">Onboard LiPo charger</text>
-  <text class="small" x="870" y="226" text-anchor="middle">normal setting ≈ 100 mA</text>
-  <text class="small" x="870" y="250" text-anchor="middle">do not bridge BOOST</text>
+  <text class="small" x="870" y="226" text-anchor="middle">charge current unspecified</text>
+  <text class="small" x="870" y="250" text-anchor="middle">verify before choosing cell</text>
   <rect class="submodule" x="1080" y="155" width="260" height="115" rx="12"/>
   <text class="label" x="1210" y="195" text-anchor="middle">nRF52840 + ZMK</text>
   <text class="small" x="1210" y="226" text-anchor="middle">BLE HID • deep sleep</text>

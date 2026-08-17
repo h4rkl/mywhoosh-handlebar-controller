@@ -8,7 +8,7 @@ A printable, rechargeable Bluetooth Low Energy keyboard controller for **MyWhoos
 
 | Variant | Controls | Printed footprint | Firmware shield | Folder |
 | --- | --- | ---: | --- | --- |
-| Two button | Shift down `k`, shift up `i` | 74 × 38 mm | `mywhoosh_two_button` | [`variants/two-button`](variants/two-button/) |
+| Two button | Shift down `k`, shift up `i` | 80 × 38 mm | `mywhoosh_two_button` | [`variants/two-button`](variants/two-button/) |
 | Four button | Left Arrow, `k`, `i`, Right Arrow | 82 × 38 mm | `mywhoosh_four_button` | [`variants/four-button`](variants/four-button/) |
 
 Do not mix a bottom and lid from different variants. Their lengths, button positions, and snap locations differ.
@@ -17,9 +17,9 @@ Do not mix a bottom and lid from different variants. Their lengths, button posit
 
 | Item | Two button | Four button | Notes |
 | --- | ---: | ---: | --- |
-| nice!nano v2-compatible nRF52840 Pro Micro board | 1 | 1 | USB-C, onboard single-cell LiPo charging, UF2-compatible bootloader required |
+| nice!nano v2-compatible nRF52840 Pro Micro board | 1 | 1 | USB-C, onboard single-cell LiPo charging, UF2-compatible bootloader required; enclosure assumes the bare board without the supplied straight headers |
 | 12 × 12 × 7.3 mm tactile switch with cap | 2 | 4 | Normally-open through-hole type |
-| Protected rechargeable 3.7 V LiPo | 1 | 1 | Reference enclosure bay is for a nominal 301230 cell, about 30 × 12 × 3 mm |
+| Protected rechargeable 3.7 V LiPo | 1 | 1 | Reference enclosure bay is for a nominal 301230 cell, about 30 × 12 × 3 mm; use it only after confirming the clone's charge current is allowed by the cell datasheet |
 | Matching 2-pin battery pigtail | 1 | 1 | Optional but preferable to permanently soldering the battery; verify polarity |
 | Thin stranded or silicone wire | as needed | as needed | One wire per input plus a shared ground |
 | Zip tie, up to 5 mm wide | 2 | 2 | Enclosure saddle is sized for a 31.8 mm handlebar |
@@ -31,12 +31,12 @@ The TP4056 charger, 5 V boost converter, external wake resistor, and ESP32-C3 bo
 
 Every button connects one input pin to GND when pressed. ZMK enables the internal pull-ups, debounces both edges for 30 ms, and configures the inputs as wake sources.
 
-| Function | Pro Micro pin | nRF52840 pin | MyWhoosh keystroke | Variant |
-| --- | --- | --- | --- | --- |
-| Steer left | D2 | P0.17 | Left Arrow | Four button only |
-| Shift down | D3 | P0.20 | `k` | Both |
-| Shift up | D4 | P0.22 | `i` | Both |
-| Steer right | D5 | P0.24 | Right Arrow | Four button only |
+| Function | Pro Micro pin | nRF52840 pin | Clone silkscreen | MyWhoosh keystroke | Variant |
+| --- | --- | --- | --- | --- | --- |
+| Steer left | D2 | P0.17 | `017` | Left Arrow | Four button only |
+| Shift down | D3 | P0.20 | `020` | `k` | Both |
+| Shift up | D4 | P0.22 | `022` | `i` | Both |
+| Steer right | D5 | P0.24 | `024` | Right Arrow | Four button only |
 
 The key actions are short taps rather than held HID keys, so holding a physical button does not cause keyboard repeat. After 15 minutes without an input, ZMK enters deep sleep. Pressing **any** control wakes it; the wake press may also be delivered after reconnection, so test this behavior with the exact clone and host before riding.
 
@@ -44,14 +44,14 @@ On a four-leg tactile switch, the two legs on each side are connected internally
 
 ## Battery and charging
 
-Use only a rechargeable single-cell 3.7 V LiPo with the board's battery input. For a genuine nice!nano v2, connect positive to `B+`, negative to `B−`, and charge through USB-C. This project uses the normal approximately 100 mA charge setting; do **not** bridge a charge-boost jumper.
+Use only a rechargeable single-cell 3.7 V LiPo with the board's battery input. The photographed clone marks positive as `B+` and negative as `B−`; charge through USB-C after the completed wiring has been checked. Its listing confirms charge management but does not specify the charge current, so do not assume the genuine nice!nano v2 value applies and do not bridge any unidentified charger-current jumper.
 
 The specified board is a compatible clone, so identify and verify these points before assembly:
 
 - Confirm the board is actually an nRF52840 nice!nano v2 pinout-compatible design.
-- Confirm the battery pads, polarity markings, charger IC, and normal charge current from its listing or schematic.
+- Confirm the charger IC and charge current from a seller schematic, component markings, or a controlled measurement before choosing the cell.
 - Check battery-connector polarity with a multimeter. Matching JST housings do not guarantee matching polarity.
-- Use a cell whose manufacturer permits the board's measured charge current. The reference 301230 size is normally around 100 mAh, but the label and datasheet take precedence over the size code.
+- Use a cell whose manufacturer permits the board's confirmed charge current. `301230` describes the approximate physical size, not a guaranteed capacity or safe charge rate; the label and cell datasheet take precedence.
 - Never connect a CR2032 or another non-rechargeable battery to `B+`/`B−`; USB would make the onboard circuit attempt to charge it.
 - Do not connect a TP4056 or 5 V boost converter to the battery pads.
 - Do not bend, crush, puncture, solder directly to, or tightly clamp the pouch. Stop using a swollen, damaged, hot, or leaking cell.
@@ -82,9 +82,9 @@ The UF2 files are written to `build/firmware/`. The first build downloads the pi
 
 ### Flash
 
-1. Build the correct UF2 before attaching the battery.
+1. Flash the bare, unwired board before attaching buttons or the battery. The supplied factory `Blink-All-IO` program toggles every GPIO and is not safe to leave running with button-to-GND wiring attached.
 2. Connect the board to the Mac with a USB-C data cable.
-3. Enter the bootloader by double-tapping reset. On boards without a reset button, briefly bridge `RST` to `GND` twice.
+3. Enter the bootloader by briefly bridging the adjacent `RST` and `GND` pads twice within 0.5 seconds. A reset button can be double-pressed only if a separate keyboard carrier provides one; none is visible on the bare board shown.
 4. Copy the correct UF2 to the USB storage volume exposed by the bootloader. A genuine board names it `NICENANO`; clones may use another name.
 5. Wait for the board to reboot, then unplug USB.
 
@@ -112,7 +112,7 @@ Use `bottom.stl` and `lid.stl` from the same variant. Suggested slicer settings:
 - Bottom open side facing up
 - Lid flat outside face on the build plate
 
-The OpenSCAD sources use a 34 × 18.5 × 5 mm maximum board envelope and a 30.5 × 12.5 × 3.5 mm battery locator. Compatible clones and protected cells vary, so measure both before printing.
+The OpenSCAD sources use a 34 × 18.5 × 5 mm maximum board envelope and a 30.5 × 12.5 × 3.5 mm battery locator. Compatible clones and protected cells vary, so measure both before printing. The board is installed with USB-C at the case opening and the PCB antenna at the battery-facing end; keep the designed air gap free of foil, metal, and excess wire.
 
 Assembly order:
 
@@ -158,7 +158,7 @@ openscad -D 'part="lid"' -o lid.stl enclosure.scad
 
 | Symptom | Check |
 | --- | --- |
-| No bootloader drive | Use a data cable; double-tap `RST` to `GND`; check whether the clone shipped with a UF2 bootloader |
+| No bootloader drive | Use a data cable; bridge `RST` to adjacent `GND` twice within 0.5 seconds; check whether the clone shipped with a UF2 bootloader |
 | Device does not appear in Bluetooth | Flash the correct UF2, disconnect USB, verify battery polarity/voltage, and clear settings if necessary |
 | Wrong or missing control | Check the D2–D5 table, shared GND continuity, and switch terminal orientation |
 | Repeated random actions | Check for GPIO-to-GND shorts, pinched wires, moisture, or an incorrectly fitted switch |

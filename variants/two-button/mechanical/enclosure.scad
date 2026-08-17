@@ -11,7 +11,8 @@ wall = 2.0;
 roof = 2.4;
 
 // Case
-case_length = 74;
+// Extra length preserves roughly 10 mm between the board antenna and LiPo pouch.
+case_length = 80;
 case_width = 38;
 corner_radius = 5;
 
@@ -44,7 +45,7 @@ button_labels = ["-", "+"];
 // Mounting
 zip_tie_width = 5.0;
 zip_tie_thickness = 2.0;
-strap_spacing = 34;
+strap_spacing = 42;
 handlebar_diameter = 31.8;
 mount_depth = 4.0;
 
@@ -133,7 +134,7 @@ module bottom() {
                     ], center = true);
 
             // Internal snap detents for the lid; they do not perforate the outer wall.
-            for (x = [-23, 23], y = [-1, 1])
+            for (x = [-26, 26], y = [-1, 1])
                 translate([x, y * (case_width / 2 - wall + 0.35), bottom_height - 4.2])
                     cube([4.0, 1.0, 1.4], center = true);
         }
@@ -185,7 +186,7 @@ module lid() {
                 switch_guide(x);
 
             // Small bumps engage the bottom's internal detents.
-            for (x = [-23, 23], y = [-1, 1])
+            for (x = [-26, 26], y = [-1, 1])
                 translate([x, y * skirt_outer_width / 2, roof + 1.8])
                     cube([3.6, 0.7, 1.0], center = true);
         }
