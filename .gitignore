@@ -1,4 +1,10 @@
-.pio/
 .DS_Store
 *.gcode
-
+.pio/
+build/
+.west/
+zephyr/
+modules/
+tools/
+bootloader/
+zmk/

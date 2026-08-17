@@ -1,5 +1,5 @@
 // MyWhoosh BLE shifter enclosure
-// ESP32-C3 SuperMini + four 12 x 12 mm tactile switches
+// nice!nano v2-compatible nRF52840 board + four tactile switches + 301230 LiPo
 // Units: millimetres. Change `part` to export one component.
 
 part = "both";  // "bottom", "lid", or "both"
@@ -11,18 +11,27 @@ wall = 2.0;
 roof = 2.4;
 
 // Case
-case_length = 80;
+case_length = 82;
 case_width = 38;
 corner_radius = 5;
-bottom_height = 15;
 
-// Common ESP32-C3 SuperMini maximum envelope. Measure clones before printing.
-board_length = 23.5;
+// Pro Micro / nice!nano v2-compatible board envelope. Measure clones before printing.
+board_length = 34.0;
 board_width = 18.5;
-board_height = 5.5;
-board_clearance = 0.5;
-usb_width = 9.5;
-usb_height = 4.5;
+board_height = 5.0;
+board_clearance = 0.6;
+usb_width = 10.0;
+usb_height = 4.2;
+
+// Reference rechargeable cell: protected 301230 LiPo (nominally 30 x 12 x 3 mm).
+// These are locator dimensions, not a clamp; enlarge them for the measured cell.
+battery_length = 30.5;
+battery_width = 12.5;
+battery_height = 3.5;
+battery_clearance = 0.5;
+
+// Preserve vertical room for the board/cell, wiring, and switch bodies.
+bottom_height = max(15, wall + max(board_height, battery_height) + 7.5);
 
 // 12 x 12 x 7.3 mm tactile switches with coloured caps
 switch_body = 12.0;
@@ -36,7 +45,6 @@ button_positions = [
      1.5 * button_spacing
 ];
 button_labels = ["<", "-", "+", ">"];
-upshift_index = 2;
 
 // Mounting
 zip_tie_width = 5.0;
@@ -68,13 +76,33 @@ module board_guides() {
     board_x = case_length / 2 - wall - board_length / 2 - 0.4;
     guide_z = wall + 0.8;
 
-    // Low rails locate the board while leaving its castellated pads accessible.
+    // Low rails locate the board while leaving the side pads accessible.
     for (y = [-1, 1])
         translate([board_x, y * (board_width / 2 + board_clearance + 0.55), guide_z])
             cube([board_length, 1.1, 1.6], center = true);
 
     translate([board_x - board_length / 2 - board_clearance - 0.55, 0, guide_z])
         cube([1.1, board_width + 2.2, 1.6], center = true);
+}
+
+module battery_guides() {
+    battery_x = -case_length / 2 + wall + battery_length / 2 + 0.8;
+    guide_z = wall + 0.7;
+    guide_height = 1.4;
+
+    // The wire end faces the board and stays open. Do not force a pouch into this bay.
+    for (y = [-1, 1])
+        translate([
+            battery_x,
+            y * (battery_width / 2 + battery_clearance + 0.55),
+            guide_z
+        ]) cube([battery_length, 1.1, guide_height], center = true);
+
+    translate([
+        battery_x - battery_length / 2 - battery_clearance - 0.55,
+        0,
+        guide_z
+    ]) cube([1.1, battery_width + 2 * battery_clearance + 2.2, guide_height], center = true);
 }
 
 module bottom() {
@@ -94,7 +122,7 @@ module bottom() {
                     bottom_height + 1
                 );
 
-            // USB-C opening, aligned to the connector on the SuperMini's short end.
+            // USB-C opening, aligned to the connector on the board's short end.
             usb_z = wall + 2.7;
             translate([case_length / 2, 0, usb_z])
                 cube([2 * wall + 2, usb_width, usb_height], center = true);
@@ -116,6 +144,7 @@ module bottom() {
         }
 
         board_guides();
+        battery_guides();
     }
 }
 
@@ -133,30 +162,9 @@ module switch_guide(x) {
             cube([guide_wall, guide_inner, guide_height], center = true);
 }
 
-// Font-independent power glyph combined with the Shift Up plus sign.
-module power_symbol_2d() {
-    union() {
-        difference() {
-            difference() {
-                circle(d = 4.0);
-                circle(d = 2.7);
-            }
-            translate([-1.1, 1.2]) square([2.2, 1.2]);
-        }
-        translate([-0.35, 0.35]) square([0.7, 2.5]);
-    }
-}
-
 module engraved_button_label(i) {
-    if (i == upshift_index) {
-        translate([-2.7, 0])
-            text("+", size = 4, halign = "center", valign = "center",
-                 font = "Liberation Sans:style=Bold");
-        translate([2.5, 0]) power_symbol_2d();
-    } else {
-        text(button_labels[i], size = 4, halign = "center", valign = "center",
-             font = "Liberation Sans:style=Bold");
-    }
+    text(button_labels[i], size = 4, halign = "center", valign = "center",
+         font = "Liberation Sans:style=Bold");
 }
 
 module lid() {

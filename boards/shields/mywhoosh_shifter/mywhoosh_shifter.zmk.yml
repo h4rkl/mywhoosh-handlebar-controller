@@ -1,0 +1,10 @@
+file_format: "1"
+id: mywhoosh_shifter
+name: MyWhoosh Shifter
+type: shield
+requires: [pro_micro]
+features:
+  - keys
+siblings:
+  - mywhoosh_two_button
+  - mywhoosh_four_button

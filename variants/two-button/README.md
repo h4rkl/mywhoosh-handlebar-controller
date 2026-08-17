@@ -1,20 +1,14 @@
 # Two-button MyWhoosh shifter
 
-This compact variant provides shifting only.
+This 74 × 38 mm variant provides shifting only.
 
-| Lid position | GPIO | Action |
-| --- | ---: | --- |
-| Left, `-` | 4 | Shift down (`k`) |
-| Right, `+ / power` | 3 | Shift up (`i`) and wake |
+| Lid position | Pro Micro pin | nRF52840 pin | Action |
+| --- | --- | --- | --- |
+| Left, `−` | D3 | P0.20 | Shift down (`k`) |
+| Right, `+` | D4 | P0.22 | Shift up (`i`) |
 
-Build and upload from the repository root:
+Build the `mywhoosh_two_button` shield or download `mywhoosh-two-button.uf2` from the firmware artifact. Flashing, battery wiring, safety, printing, and assembly instructions are in the [root README](../../README.md).
 
-```sh
-pio run -e two-button --target upload
-```
+Print both files in [`mechanical/stl`](mechanical/stl/). The parametric source is [`mechanical/enclosure.scad`](mechanical/enclosure.scad); it targets a nice!nano v2-compatible board and a nominal 301230 LiPo.
 
-Print both files in `mechanical/stl/`; the matching parametric source is `mechanical/enclosure.scad`. Connect each button between its GPIO and the shared GND connection.
-
-After 15 minutes without a button press, the firmware enters deep sleep. Only the Shift Up control marked `+ / power` wakes it. The first press is wake-only; release it, wait for Bluetooth to reconnect, then press again to shift. Add a 10 kΩ pull-up from GPIO3 to `3V3` for reliable wake-up; GPIO4 uses its internal pull-up.
-
-This is a battery-powered build. Follow the root README's battery wiring and safety section: the protected TP4056 output must feed a regulated 5 V boost converter before the ESP32 `5V` pin. Confirm the chosen cell and power modules fit without pressure on the LiPo pouch before printing or final assembly.
+Both controls use internal pull-ups, connect to shared GND, and can wake ZMK from deep sleep. No external pull-up resistor is required.

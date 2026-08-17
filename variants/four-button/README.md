@@ -1,28 +1,20 @@
 # Four-button MyWhoosh shifter and steering controller
 
-This variant provides shifting plus left/right steering.
+This 82 × 38 mm variant provides shifting plus left/right steering.
 
-| Lid position | GPIO | Action |
-| --- | ---: | --- |
-| Far left, `<` | 5 | Steer left (Left Arrow) |
-| Centre left, `-` | 4 | Shift down (`k`) |
-| Centre right, `+ / power` | 3 | Shift up (`i`) and wake |
-| Far right, `>` | 1 | Steer right (Right Arrow) |
+| Lid position | Pro Micro pin | nRF52840 pin | Action |
+| --- | --- | --- | --- |
+| Far left, `<` | D2 | P0.17 | Steer left (Left Arrow) |
+| Centre left, `−` | D3 | P0.20 | Shift down (`k`) |
+| Centre right, `+` | D4 | P0.22 | Shift up (`i`) |
+| Far right, `>` | D5 | P0.24 | Steer right (Right Arrow) |
 
 ```text
-[ steer < ] [ shift down - ] [ shift up + / power ] [ steer > ]
+[ steer < ] [ shift down − ] [ shift up + ] [ steer > ]
 ```
 
-All four buttons sit in one line over the handlebar axis. This rectangular layout reduces rocking when an outside button is pressed.
+Build the `mywhoosh_four_button` shield or download `mywhoosh-four-button.uf2` from the firmware artifact. Flashing, battery wiring, safety, printing, and assembly instructions are in the [root README](../../README.md).
 
-Build and upload from the repository root:
+Print both files in [`mechanical/stl`](mechanical/stl/). The parametric source is [`mechanical/enclosure.scad`](mechanical/enclosure.scad); it targets a nice!nano v2-compatible board and a nominal 301230 LiPo.
 
-```sh
-pio run -e four-button --target upload
-```
-
-Print both files in `mechanical/stl/`; the matching parametric source is `mechanical/enclosure.scad`. Connect each button between its GPIO and the shared GND connection.
-
-After 15 minutes without a button press, the firmware enters deep sleep. Only the Shift Up control marked `+ / power` wakes it. The first press is wake-only; release it, wait for Bluetooth to reconnect, then press again to shift. Add a 10 kΩ pull-up from GPIO3 to `3V3` for reliable wake-up; the other three controls use their internal pull-ups.
-
-This is a battery-powered build. Follow the root README's battery wiring and safety section: the protected TP4056 output must feed a regulated 5 V boost converter before the ESP32 `5V` pin. Confirm the chosen cell and power modules fit without pressure on the LiPo pouch before printing or final assembly.
+All controls use internal pull-ups, connect to shared GND, and can wake ZMK from deep sleep. No external pull-up resistor is required.

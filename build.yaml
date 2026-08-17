@@ -1,0 +1,11 @@
+---
+include:
+  - board: nice_nano_v2
+    shield: mywhoosh_two_button
+    artifact-name: mywhoosh-two-button
+  - board: nice_nano_v2
+    shield: mywhoosh_four_button
+    artifact-name: mywhoosh-four-button
+  - board: nice_nano_v2
+    shield: settings_reset
+    artifact-name: nice-nano-settings-reset
