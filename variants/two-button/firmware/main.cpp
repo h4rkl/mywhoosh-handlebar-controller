@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <BleKeyboard.h>
+#include <esp_sleep.h>
 
 namespace {
 
@@ -8,6 +9,10 @@ constexpr uint8_t kDownshiftPin = 4;
 constexpr uint8_t kUpshiftKey = 'i';
 constexpr uint8_t kDownshiftKey = 'k';
 constexpr uint32_t kDebounceMs = 30;
+constexpr uint32_t kSleepTimeoutMs = 15UL * 60UL * 1000UL;
+constexpr uint64_t kWakePinMask =
+    (1ULL << kUpshiftPin) |
+    (1ULL << kDownshiftPin);
 
 BleKeyboard keyboard("MyWhooshShift", "DIY", 100);
 
@@ -48,6 +53,7 @@ class DebouncedButton {
 DebouncedButton upshift(kUpshiftPin);
 DebouncedButton downshift(kDownshiftPin);
 bool was_connected = false;
+uint32_t last_activity_at = 0;
 
 void sendAction(uint8_t key, const char* label) {
   if (!keyboard.isConnected()) {
@@ -56,6 +62,50 @@ void sendAction(uint8_t key, const char* label) {
 
   keyboard.write(key);
   Serial.println(label);
+}
+
+void handleButton(DebouncedButton& button, uint8_t key, const char* label,
+                  uint32_t now) {
+  if (!button.pressed(now)) {
+    return;
+  }
+
+  last_activity_at = now;
+  sendAction(key, label);
+}
+
+bool allButtonsReleased() {
+  return digitalRead(kUpshiftPin) == HIGH &&
+         digitalRead(kDownshiftPin) == HIGH;
+}
+
+void sleepIfInactive(uint32_t now) {
+  if (now - last_activity_at < kSleepTimeoutMs) {
+    return;
+  }
+
+  // Never enter a low-level wake sleep while a button is already held.
+  if (!allButtonsReleased()) {
+    last_activity_at = now;
+    return;
+  }
+
+  if (keyboard.isConnected()) {
+    keyboard.releaseAll();
+  }
+
+  const esp_err_t result = esp_deep_sleep_enable_gpio_wakeup(
+      kWakePinMask, ESP_GPIO_WAKEUP_GPIO_LOW);
+  if (result != ESP_OK) {
+    Serial.printf("Unable to configure button wake-up: %d\n", result);
+    last_activity_at = now;
+    return;
+  }
+
+  Serial.println("Inactive for 15 minutes; entering deep sleep.");
+  Serial.flush();
+  delay(20);
+  esp_deep_sleep_start();
 }
 
 }  // namespace
@@ -67,6 +117,10 @@ void setup() {
 
   keyboard.setDelay(10);
   keyboard.begin();
+  last_activity_at = millis();
+  if (esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_GPIO) {
+    Serial.println("Woken by a shifter button; release it, then press again to act.");
+  }
   Serial.println("MyWhoosh shifter ready; pair Bluetooth device 'MyWhooshShift'.");
 }
 
@@ -82,11 +136,8 @@ void loop() {
     was_connected = connected;
   }
 
-  if (upshift.pressed(now)) {
-    sendAction(kUpshiftKey, "Upshift (i)");
-  }
-  if (downshift.pressed(now)) {
-    sendAction(kDownshiftKey, "Downshift (k)");
-  }
+  handleButton(upshift, kUpshiftKey, "Upshift (i)", now);
+  handleButton(downshift, kDownshiftKey, "Downshift (k)", now);
+  sleepIfInactive(now);
   delay(2);
 }
